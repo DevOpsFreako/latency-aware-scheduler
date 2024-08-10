@@ -1,0 +1,48 @@
+1. CustomScheduler Struct:
+clientset: Interface to interact with the Kubernetes API.
+queue: A rate-limiting work queue that holds pods waiting to be scheduled.
+informer: Watches for changes to pods that are associated with the custom scheduler (named latency-aware-scheduler).
+visitedNodesPerApp: Tracks which nodes have been visited for each app to avoid repeatedly scheduling pods on the same nodes.
+pauseDescheduler: A channel used to signal when to pause descheduling operations.
+pastMeasurements: Stores past latency measurements for pods on different nodes to inform future scheduling decisions.
+2. NewCustomScheduler Function:
+Initializes a new CustomScheduler.
+Sets up an informer to watch for pods that need scheduling by the custom scheduler.
+Adds event handlers to process new pods that need scheduling.
+Returns the initialized scheduler.
+3. Run Method:
+Runs the scheduler by processing pods from the queue.
+For each pod, it attempts to schedule it using the schedulePod method.
+If scheduling fails, it requeues the pod with a rate-limited delay.
+4. schedulePod Method:
+Retrieves the pod using the key provided by the queue.
+Chooses a node for the pod using the chooseNodeForPod method.
+Assigns the pod to the selected node with assignPodToNode.
+5. chooseNodeForPod Method:
+Retrieves the list of available nodes.
+Filters and selects a node using the getBestNode method.
+6. getBestNode Method:
+Selects the best node based on a custom scoring system.
+Ignores control-plane nodes and avoids nodes that have already been visited for the same app.
+Scores nodes based on available CPU and memory.
+If multiple nodes have the same score, it selects one at random.
+If all nodes have been visited, it falls back to using past latency measurements (getLastCycleBestNode) to choose the best node from the previous scheduling cycle.
+Optionally falls back to a classic random scheduling behavior if needed (classicScheduleBehavior).
+7. getNodeScore Function:
+Calculates a score for a node based on its available CPU and memory.
+The score is used to determine the "best" node for scheduling.
+8. assignPodToNode Method:
+Binds a pod to a node by creating a binding object and sending it to the Kubernetes API.
+This operation effectively schedules the pod on the selected node.
+9. shouldPauseDescheduler Method:
+Checks if all nodes have been visited for a given app.
+If true, sends a signal to pause the descheduler using the pauseDescheduler channel.
+10. getLastCycleBestNode Method:
+Retrieves the node with the best (lowest) latency from the last scheduling cycle for a given app.
+Used when all nodes have been visited.
+11. classicScheduleBehavior Method:
+Implements a fallback scheduling behavior that randomly selects a node from the available nodes, excluding the control-plane node.
+Overall Logic:
+The CustomScheduler tries to optimize pod scheduling by considering node resources (CPU and memory) and avoiding repeatedly scheduling pods on the same nodes. It uses a scoring system to pick the best node, but it can fall back to random selection if necessary. The scheduler also integrates latency measurements from previous cycles to inform future decisions.
+
+This custom logic can be useful in scenarios where you need more fine-grained control over pod placement based on specific resource availability, latency requirements, or other criteria not handled by the default Kubernetes scheduler.
