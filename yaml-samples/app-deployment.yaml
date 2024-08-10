@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  selector:
+    matchLabels:
+      app: myapp
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      serviceAccountName: latency-meter
+      schedulerName: latency-aware-scheduler
+      containers:
+      - name: mynginx
+        image: nginx:latest  # Changed to use the official nginx image
+        ports:
+        - containerPort: 80
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      - name: latency-meter
+        image: crischiaro/latency-meter:latest  # This image is already specified correctly
+        ports:
+        - containerPort: 8080
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace

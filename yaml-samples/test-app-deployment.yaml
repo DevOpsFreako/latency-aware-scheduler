@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+    spec:
+      schedulerName: latency-aware-scheduler
+      containers:
+      - name: test-app
+        image: devopsfreak0/test-app:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name

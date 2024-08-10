@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-custom-scheduler-pod
+  annotations:
+    scheduler.alpha.kubernetes.io/name: latency-aware-scheduler
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+
