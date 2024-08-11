@@ -128,6 +128,10 @@ Navigate to `./tests/`:
 The latency is artificially simulated using the `tc` command, which needs to be manually applied to the relevant nodes. For example:
 
 ```bash
+tc qdisc show
+```
+
+```bash
 tc qdisc add dev eth0 root netem delay 100ms
 ```
 ### Useful Commands
