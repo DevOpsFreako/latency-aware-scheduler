@@ -75,7 +75,7 @@ To use the `latency-aware-scheduler` project, you must meet the following prereq
 
 4. **Start the custom scheduler**
     ```bash
-    kubectl apply -f latency-aware-scheduler
+    kubectl apply -f latency-aware-scheduler.yaml
     ```
 
 
