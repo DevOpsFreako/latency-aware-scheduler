@@ -10,6 +10,37 @@ This file defines the DaemonSet (pod distributed across all nodes in the cluster
 ###  2. latency-node-extender.yaml
 This file defines the Deployment for the node extender that calculates the network latency between the user and the node. The node extender runs as a single pod in the cluster. The Docker image used in this file must be built and uploaded by you to a container registry such as Docker Hub or Google Container Registry.
 
+#### Adding Dockerfile and building node extender
+```
+cat <<EOF > Dockerfile
+# Use a base image with Go support
+FROM golang:1.21-alpine
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the Go source code
+COPY . .
+
+# Build the Go executable
+RUN go build -o latency-node-extender main.go
+
+# Expose the port for the Node Extender service
+EXPOSE 8080
+
+# Set the command to run the Node Extender
+CMD ["latency-node-extender"]
+EOF
+``
+
+``
+docker build -t devopsfreak0/latency-node-extender:latest .
+docker build -t [your-registry]/latency-node-extender:latest .
+
+docker push devopsfreak0/latency-node-extender:latest
+docker push [your-registry]/latency-node-extender:latest
+```
+
 ###   3. latency-node-extender-service.yaml
 This file defines the service that exposes the node extender. The service uses the selector app: latency-node-extender to route traffic to the node extender pod. The service is exposed on port 8080.
 
